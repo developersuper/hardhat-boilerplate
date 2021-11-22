@@ -31,6 +31,8 @@ async function main() {
   const amount = await tet.totalSupply();
   await tet.transfer(pool.address, amount);
 
+  await pool.startDistribution();
+
   try{
     await run("verify:verify", {
       address: tet.address,

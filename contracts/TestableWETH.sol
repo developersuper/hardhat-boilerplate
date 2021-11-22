@@ -1,6 +1,8 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
+import "hardhat/console.sol";
+
 contract TestableWETH {
     string public name = "Wrapped Ether";
     string public symbol = "WETH";
@@ -35,6 +37,7 @@ contract TestableWETH {
     }
 
     function approve(address guy, uint wad) public returns (bool) {
+        console.log(msg.sender, guy, wad);
         allowance[msg.sender][guy] = wad;
         emit Approval(msg.sender, guy, wad);
         return true;

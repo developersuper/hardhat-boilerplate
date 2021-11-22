@@ -94,6 +94,7 @@ contract StakeRewardDistributionPool is Ownable, ReentrancyGuard, Pausable {
     _totalSupply = _totalSupply.add(amount);
     _balances[msg.sender] = _balances[msg.sender].add(amount);
 
+    stakingToken.safeApprove(address(this), amount);
     stakingToken.safeTransferFrom(msg.sender, address(this), amount);
 
     emit Staked(msg.sender, amount);
