@@ -10,7 +10,7 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 
 import "./TestERC20Token.sol";
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 contract StakeRewardDistributionPool is Ownable, ReentrancyGuard, Pausable {
   using SafeMath for uint256;
@@ -36,10 +36,10 @@ contract StakeRewardDistributionPool is Ownable, ReentrancyGuard, Pausable {
   event RewardPaid(address indexed user, uint256 reward);
   event Recovered(address token, uint256 amount);
 
-  constructor(address _stakingToken) {
+  constructor(address _stakingToken, address _rewardsToken) {
     stakingToken = IERC20(_stakingToken);
-    // rewardsToken = IERC20(_rewardsToken);
-    rewardsToken = new TestERC20Token();
+    rewardsToken = IERC20(_rewardsToken);
+    // rewardsToken = new TestERC20Token();
   }
 
   function startDistribution() external onlyOwner {

@@ -1,6 +1,5 @@
 const { expect, assert } = require("chai");
 const { ethers } = require("hardhat");
-const tetAbi = require("../artifacts/contracts/TestERC20Token.sol/TestERC20Token.json").abi;
 
 describe("Testing", function () {
 
@@ -10,16 +9,20 @@ describe("Testing", function () {
     accounts = await ethers.getSigners();
     owner = accounts[0];
 
+    const Tet = await hre.ethers.getContractFactory("TestERC20Token");
+    tet = await Tet.deploy();
+    await tet.deployed();  
+
     const WETH = await ethers.getContractFactory("TestableWETH");
     weth = await WETH.deploy();
     await weth.deployed();
 
     const Pool = await ethers.getContractFactory("StakeRewardDistributionPool");
-    pool = await Pool.deploy(weth.address);
+    pool = await Pool.deploy(weth.address, tet.address);
     await pool.deployed();
 
-    const tetAddress = await pool.getTet();
-    tet = new ethers.Contract(tetAddress, tetAbi, accounts[0]);
+    const amount = await tet.totalSupply();
+    await tet.transfer(pool.address, amount);
   });
 
   it("Should be correct name, symbol, totalSupply and balance after deployment", async function () {

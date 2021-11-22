@@ -4,6 +4,8 @@
 // When running the script with `npx hardhat run <script>` you'll find the Hardhat
 // Runtime Environment's members available in the global scope.
 const hre = require("hardhat");
+require("@nomiclabs/hardhat-etherscan");
+require('hardhat-deploy');
 
 async function main() {
   // Hardhat always runs the compile task when running scripts with its command
@@ -14,12 +16,45 @@ async function main() {
   // await hre.run('compile');
 
   // We get the contract to deploy
-  const Greeter = await hre.ethers.getContractFactory("Greeter");
-  const greeter = await Greeter.deploy("Hello, Hardhat!");
+  const wethAddress = "0xc778417E063141139Fce010982780140Aa0cD5Ab";
 
-  await greeter.deployed();
+  const Tet = await hre.ethers.getContractFactory("TestERC20Token");
+  const tet = await Tet.deploy();
+  await tet.deployed();
+  console.log("TET deployed at ", tet.address);
 
-  console.log("Greeter deployed to:", greeter.address);
+  const Pool = await hre.ethers.getContractFactory("StakeRewardDistributionPool");
+  const pool = await Pool.deploy(wethAddress, tet.address);
+  await pool.deployed();
+  console.log("pool deployed at ", pool.address);
+
+  const amount = await tet.totalSupply();
+  await tet.transfer(pool.address, amount);
+
+  try{
+    await run("verify:verify", {
+      address: tet.address,
+      network: `rinkeby`,
+      contract: "contracts/TestERC20Token.sol:TestERC20Token",
+    });
+  }catch(e) {
+    console.log(e);
+  }
+  try{
+    await run("verify:verify", {
+      address: pool.address,
+      network: `rinkeby`,
+      contract: "contracts/StakeRewardDistributionPool.sol:StakeRewardDistributionPool",
+      constructorArguments: [
+        wethAddress,
+        tet.address
+      ]
+    });
+  }catch(e) {
+    console.log(e);
+  }
+  //npx hardhat verify --contract contracts/TestERC20Token.sol:TestERC20Token --network rinkeby 0x1de00ECC8d7016b947792Bae196e553209da9d61
+  //npx hardhat verify --contract contracts/StakeRewardDistributionPool.sol:StakeRewardDistributionPool --network rinkeby 0x6234A3226e764158AE992178d55763713BfE3F7A 0xc778417E063141139Fce010982780140Aa0cD5Ab 0x1de00ECC8d7016b947792Bae196e553209da9d61
 }
 
 // We recommend this pattern to be able to use async/await everywhere
